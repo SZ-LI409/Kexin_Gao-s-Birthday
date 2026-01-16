@@ -3,77 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Marshall Tuner</title>
+    <title>Marshall Anniversary</title>
     <style>
-        :root { --gold: #d4af37; --black: #1a1a1a; --green: #00ff00; }
-        body { background: #000; color: var(--gold); font-family: "Times New Roman", Times, serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        :root { --gold: #d4af37; --black: #000; --green: #00ff00; }
+        body { background: var(--black); color: var(--gold); font-family: "Georgia", serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; touch-action: none; }
 
-        /* 1. 还原 Marshall Logo 质感 */
-        .marshall-logo {
-            font-size: 3.5rem;
-            color: #fff;
-            font-style: italic;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 0px #444, 4px 4px 8px rgba(0,0,0,0.8);
-            letter-spacing: -2px;
-        }
+        /* Marshall 经典 Logo 样式 */
+        .logo { font-size: 3.8rem; color: #fff; font-style: italic; font-weight: bold; margin-bottom: 10px; text-shadow: 2px 2px 0px #444, 4px 4px 15px rgba(255,255,255,0.1); letter-spacing: -2px; }
 
-        #screen { width: 90vw; height: 30vh; border: 3px solid #333; border-radius: 10px; background: #051005; position: relative; box-shadow: inset 0 0 50px #000; }
+        #screen { width: 88vw; height: 32vh; border: 2px solid #2a2a2a; border-radius: 10px; background: #051005; position: relative; box-shadow: inset 0 0 50px #000; margin-bottom: 30px; }
         canvas { width: 100%; height: 100%; }
 
-        .controls { width: 85vw; margin-top: 40px; }
-        .knob-container { margin-bottom: 35px; }
-        .label { font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 15px; display: block; color: #888; }
-
-        /* 2. 在轨道中直接显示目标位置 */
-        input[type=range] { 
-            width: 100%; -webkit-appearance: none; height: 8px; border-radius: 4px; outline: none;
-            /* 利用渐变在特定位置画出金线目标 */
-        }
+        .controls { width: 80vw; }
+        .slider-box { position: relative; margin-bottom: 40px; }
+        .slider-label { font-size: 0.75rem; letter-spacing: 2px; color: #666; margin-bottom: 15px; display: block; }
         
-        /* Frequency 轨道：在 11% 处标金线 */
-        #freq { background: linear-gradient(to right, #333 10%, var(--gold) 11%, var(--gold) 12%, #333 13%); }
-        /* Amplitude 轨道：在 80% 处标金线 */
-        #amp { background: linear-gradient(to right, #333 79%, var(--gold) 80%, var(--gold) 81%, #333 82%); }
+        /* 轨道目标刻度 */
+        .target-mark { position: absolute; top: 22px; width: 2px; height: 12px; background: var(--gold); box-shadow: 0 0 8px var(--gold); z-index: 5; pointer-events: none; }
+        .target-mark::after { content: attr(data-val); position: absolute; top: -18px; left: -10px; font-size: 10px; color: var(--gold); }
 
-        input[type=range]::-webkit-slider-thumb { 
-            -webkit-appearance: none; height: 34px; width: 34px; border-radius: 50%; 
-            background: radial-gradient(circle, #eee, var(--gold)); border: 2px solid #000; box-shadow: 0 4px 6px rgba(0,0,0,0.5); margin-top: -13px; 
-        }
+        input[type=range] { width: 100%; -webkit-appearance: none; background: #222; height: 6px; border-radius: 3px; outline: none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 32px; width: 32px; border-radius: 50%; background: radial-gradient(circle, #fff, var(--gold)); border: 2px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.8); margin-top: -13px; cursor: pointer; position: relative; z-index: 10; }
 
-        #overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: none; background: rgba(0,0,0,0.95); flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 100; text-align: center;
-        }
-        .btn { 
-            padding: 20px 50px; border: none; background: var(--gold); color: #000; 
-            font-size: 1.2rem; font-weight: bold; border-radius: 5px; cursor: pointer;
-            box-shadow: 0 0 20px rgba(212,175,55,0.5);
-        }
+        /* 成功弹窗 */
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; z-index: 100; text-align: center; }
+        .btn { padding: 18px 40px; border: none; background: var(--gold); color: #000; font-size: 1.1rem; font-weight: bold; border-radius: 4px; cursor: pointer; box-shadow: 0 0 30px rgba(212,175,55,0.4); }
     </style>
 </head>
 <body>
 
-    <div class="marshall-logo">Marshall</div>
+    <div class="logo">Marshall</div>
 
     <div id="screen">
         <canvas id="osc"></canvas>
         <div id="overlay">
-            <h1 style="color:#fff; margin-bottom:10px;">SUCCESS</h1>
-            <p style="color:var(--gold); margin-bottom:30px;">SIGNAL SYNCHRONIZED</p>
-            <button class="btn" id="playBtn">BIRTHDAY MODE ON</button>
+            <h1 style="color:#fff; font-style: italic; margin-bottom: 5px;">SUCCESS</h1>
+            <p style="margin-bottom: 30px; letter-spacing: 1px;">FREQUENCY MATCHED</p>
+            <button class="btn" id="startBtn">START BIRTHDAY PARTY</button>
         </div>
     </div>
 
     <div class="controls">
-        <div class="knob-container">
-            <span class="label">FREQUENCY (TARGET: 11)</span>
-            <input type="range" id="freq" min="0" max="100" value="50">
+        <div class="slider-box">
+            <span class="slider-label">FREQUENCY</span>
+            <div class="target-mark" style="left: 11%;" data-val="11"></div>
+            <input type="range" id="freq" min="0" max="100" value="40">
         </div>
-        <div class="knob-container">
-            <span class="label">AMPLITUDE (TARGET: 80)</span>
+        
+        <div class="slider-box">
+            <span class="slider-label">AMPLITUDE</span>
+            <div class="target-mark" style="left: 80%;" data-val="80"></div>
             <input type="range" id="amp" min="0" max="100" value="20">
         </div>
     </div>
@@ -89,7 +68,7 @@
         const ampInput = document.getElementById('amp');
         const overlay = document.getElementById('overlay');
         const bgm = document.getElementById('bgm');
-        const playBtn = document.getElementById('playBtn');
+        const startBtn = document.getElementById('startBtn');
 
         let width, height, offset = 0;
         let isUnlocked = false;
@@ -101,29 +80,29 @@
         window.onresize = resize;
         resize();
 
-        // 3. 解决音频播放的关键：必须由用户直接点击触发
-        playBtn.addEventListener('click', function() {
-            bgm.play();
-            playBtn.innerText = "HAPPY BIRTHDAY!";
-            playBtn.style.background = "#fff";
-            setTimeout(() => {
-                alert("礼物已解锁！快去开启你的马歇尔音箱吧！");
-            }, 500);
-        });
+        // 关键：解决音量和播放问题
+        startBtn.onclick = () => {
+            bgm.volume = 1.0;
+            bgm.play().then(() => {
+                startBtn.innerText = "Enjoy the Marshall Sound";
+                startBtn.disabled = true;
+                startBtn.style.opacity = "0.7";
+            }).catch(e => alert("请确保静音开关已关闭并调节音量"));
+        };
 
         function draw() {
             ctx.clearRect(0, 0, width, height);
             
-            // 绘制绿色网格
+            // 绘制网格背景
             ctx.strokeStyle = '#0a2a0a';
             ctx.lineWidth = 1;
-            for(let i=0; i<width; i+=30) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke(); }
-            for(let i=0; i<height; i+=30) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke(); }
+            for(let i=0; i<width; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke(); }
+            for(let i=0; i<height; i+=40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke(); }
 
             const f = parseInt(freqInput.value);
             const a = parseInt(ampInput.value);
 
-            // 判定逻辑：目标 11 和 80
+            // 检查解锁：允许 ±3 的误差
             const matched = (Math.abs(f - 11) <= 3 && Math.abs(a - 80) <= 3);
 
             if (matched && !isUnlocked) {
@@ -131,17 +110,23 @@
                 overlay.style.display = 'flex';
             }
 
-            ctx.strokeStyle = matched ? var(--green) : var(--gold);
+            // 绘制波形
+            ctx.strokeStyle = matched ? '#00ff00' : '#d4af37';
             ctx.lineWidth = matched ? 4 : 2;
+            ctx.shadowBlur = matched ? 15 : 0;
+            ctx.shadowColor = ctx.strokeStyle;
+            
             ctx.beginPath();
-
             for (let x = 0; x < width; x++) {
-                let y = height/2 + Math.sin(x * (f/150) + offset) * (a * height/250);
+                // 如果没匹配，波形会有抖动干扰感
+                let noise = isUnlocked ? 0 : (Math.random() - 0.5) * (30 - a/4);
+                let y = height/2 + Math.sin(x * (f/150) + offset) * (a * height/300) + noise;
                 if (x === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
-            offset += 0.1;
+            
+            offset += isUnlocked ? 0.15 : 0.08;
             requestAnimationFrame(draw);
         }
 
