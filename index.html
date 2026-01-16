@@ -6,11 +6,11 @@
     <title>Marshall Anniversary</title>
     <style>
         :root {
-            --gold: #d4af37;       /* 马歇尔经典金色 */
-            --dark-gold: #8a7020;  /* 暗金 */
-            --black: #080808;      /* 接近纯黑的背景 */
-            --panel-bg: #111;      /* 面板颜色 */
-            --screen-bg: #051005;  /* 示波器深绿背景 */
+            --gold: #d4af37;
+            --dark-gold: #8a7020;
+            --black: #080808;
+            --panel-bg: #111;
+            --screen-bg: #051005;
         }
 
         body {
@@ -21,17 +21,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            /* 1. 布局修复：不再垂直居中，而是从顶部开始，留出 10% 的距离 */
+            justify-content: flex-start;
+            padding-top: 10vh; 
             height: 100vh;
             overflow: hidden;
             touch-action: none;
         }
 
-        /* --- 1. Logo 区域 --- */
+        /* Logo 区域 */
         .logo-container {
-            margin-bottom: 20px;
-            width: 60%;         /* Logo 宽度占屏幕 60% */
-            max-width: 260px;   /* 最大不超过 260px */
+            /* 减少底部间距，让屏幕更靠上 */
+            margin-bottom: 15px;
+            width: 50%;
+            max-width: 220px;
             display: flex;
             justify-content: center;
         }
@@ -40,97 +43,78 @@
             width: 100%;
             height: auto;
             display: block;
-            /* 如果你的 png 自带黑色背景，这里不需要处理 */
-            /* 如果有色差，可以尝试加一点 filter 调整，但通常纯黑即可 */
         }
 
-        /* --- 2. 示波器屏幕 --- */
+        /* 示波器屏幕 */
         #screen-frame {
             width: 85vw;
-            height: 30vh;
-            border: 4px solid #333; /* 边框 */
+            /* 稍微拉高屏幕高度，填充视觉 */
+            height: 35vh; 
+            border: 4px solid #333;
             border-radius: 12px;
             background: var(--screen-bg);
             position: relative;
-            box-shadow: 
-                inset 0 0 40px #000,   /* 内阴影 */
-                0 0 0 2px var(--gold); /* 外圈金线装饰 */
-            margin-bottom: 40px;
+            box-shadow: inset 0 0 40px #000, 0 0 0 2px var(--gold);
+            margin-bottom: 30px;
             overflow: hidden;
         }
 
-        canvas {
-            width: 100%;
-            height: 100%;
-        }
+        canvas { width: 100%; height: 100%; }
 
-        /* --- 3. 控件区域 --- */
+        /* 控件区域 */
         .controls {
             width: 80vw;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 25px;
         }
 
-        .slider-group {
-            position: relative;
-        }
+        .slider-group { position: relative; }
 
         .label {
             font-size: 0.75rem;
             letter-spacing: 2px;
             color: #888;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: block;
             font-weight: bold;
             text-transform: uppercase;
         }
 
-        /* --- 自定义 CSS 绘制的金色旋钮 --- */
+        /* 滑动条样式 */
         input[type=range] {
             width: 100%;
             -webkit-appearance: none;
             height: 8px;
             border-radius: 4px;
             outline: none;
-            background: #222; /* 默认轨道颜色 */
+            background: #222;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
         }
+        /* 金色刻度暗示 */
+        #freq { background: linear-gradient(to right, #222 10%, var(--gold) 11%, var(--gold) 12%, #222 13%); }
+        #amp { background: linear-gradient(to right, #222 79%, var(--gold) 80%, var(--gold) 81%, #222 82%); }
 
-        /* 使用渐变在轨道上画出“目标点” (Frequency 11%, Amplitude 80%) */
-        /* 这种方式比文字说明更直观 */
-        #freq {
-            background: linear-gradient(to right, #222 10%, var(--gold) 11%, var(--gold) 12%, #222 13%);
-        }
-        #amp {
-            background: linear-gradient(to right, #222 79%, var(--gold) 80%, var(--gold) 81%, #222 82%);
-        }
-
-        /* 滑块头 (Thumb) - 拟物化金色旋钮 */
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 32px;
             width: 32px;
             border-radius: 50%;
-            /* 径向渐变模拟金属反光 */
             background: radial-gradient(circle at 30% 30%, #fff, var(--gold) 50%, var(--dark-gold));
             border: 2px solid #000;
             box-shadow: 0 4px 8px rgba(0,0,0,0.6);
             cursor: pointer;
-            margin-top: -12px; /* 垂直对齐 */
+            margin-top: -12px;
             position: relative;
             z-index: 10;
         }
 
-        /* --- 4. 成功提示 & 按钮 --- */
+        /* 成功提示层 */
         #overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none; /* 默认隐藏 */
-            background: rgba(0,0,0,0.92);
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            background: rgba(0,0,0,0.95);
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -146,27 +130,27 @@
             font-family: serif;
         }
 
-        .success-desc {
-            color: var(--gold);
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            margin-bottom: 25px;
-        }
-
         .btn {
-            padding: 16px 36px;
+            padding: 16px 40px;
             border: none;
             background: var(--gold);
             color: #000;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
             box-shadow: 0 0 20px rgba(212,175,55,0.3);
-            transition: opacity 0.3s;
+            margin-bottom: 20px;
         }
-        .btn:active { opacity: 0.8; }
 
+        /* 2. 音频调试信息显示区 */
+        #debug-log {
+            font-size: 10px;
+            color: #ff4444;
+            margin-top: 10px;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -179,8 +163,11 @@
         <canvas id="osc"></canvas>
         <div id="overlay">
             <h1 class="success-title">Success</h1>
-            <p class="success-desc">CHANNEL UNLOCKED</p>
-            <button class="btn" id="playBtn">START PARTY</button>
+            <p style="color:var(--gold); margin-bottom:20px; letter-spacing:1px;">FREQUENCY UNLOCKED</p>
+            
+            <button class="btn" id="playBtn">CLICK TO PLAY</button>
+            
+            <div id="debug-log"></div>
         </div>
     </div>
 
@@ -189,7 +176,6 @@
             <span class="label">Frequency</span>
             <input type="range" id="freq" min="0" max="100" value="45">
         </div>
-        
         <div class="slider-group">
             <span class="label">Amplitude</span>
             <input type="range" id="amp" min="0" max="100" value="30">
@@ -208,6 +194,7 @@
         const overlay = document.getElementById('overlay');
         const bgm = document.getElementById('bgm');
         const playBtn = document.getElementById('playBtn');
+        const debugLog = document.getElementById('debug-log');
 
         let width, height, offset = 0;
         let isUnlocked = false;
@@ -219,28 +206,44 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 核心交互：点击按钮播放本地音乐
-        playBtn.addEventListener('click', () => {
+        // --- 音频播放核心修复 ---
+        function playMusic() {
+            debugLog.innerText = "Trying to play...";
+            debugLog.style.color = "#ffff00";
+
             bgm.volume = 1.0;
-            // 尝试播放
-            const promise = bgm.play();
-            
-            if (promise !== undefined) {
-                promise.then(() => {
+            const playPromise = bgm.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    // 播放成功
                     playBtn.innerText = "HAPPY BIRTHDAY!";
+                    playBtn.style.backgroundColor = "#fff"; 
                     playBtn.disabled = true;
-                    playBtn.style.opacity = "0.6";
-                    // 也可以在这里加个烟花动画效果
+                    debugLog.innerText = "Playing... (Check volume)";
+                    debugLog.style.color = "#00ff00";
                 }).catch(error => {
-                    alert("播放受阻，请检查静音开关或点击重试");
+                    // 播放失败，打印错误原因到屏幕上
+                    console.error(error);
+                    debugLog.innerText = "Error: " + error.message + " (Name: " + error.name + ")";
+                    
+                    // 针对常见错误的提示
+                    if (error.name === 'NotAllowedError') {
+                        debugLog.innerText += "\nTry clicking again!";
+                    } else if (error.name === 'NotSupportedError' || error.message.includes('404')) {
+                        debugLog.innerText += "\nFile missing or bad format. Check 'birthday.mp3' in repo.";
+                    }
                 });
             }
-        });
+        }
+
+        // 同时监听 click 和 touchstart，增加 iOS 响应几率
+        playBtn.addEventListener('click', playMusic);
+        playBtn.addEventListener('touchstart', playMusic);
 
         function draw() {
             ctx.clearRect(0, 0, width, height);
 
-            // 绘制网格线 (复古绿)
             ctx.strokeStyle = '#0f2a0f';
             ctx.lineWidth = 1;
             for(let i=0; i<width; i+=30) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke(); }
@@ -249,41 +252,32 @@
             const f = parseInt(freqInput.value);
             const a = parseInt(ampInput.value);
 
-            // 解锁逻辑：Frequency 在 11±3，Amplitude 在 80±3
-            // 对应 Marshall 的 "Goes to Eleven" 梗
+            // 目标：11 和 80
             const matched = (Math.abs(f - 11) <= 3 && Math.abs(a - 80) <= 3);
 
             if (matched && !isUnlocked) {
                 isUnlocked = true;
-                // 延迟一点点弹出，让用户看到波形变绿
+                // 预加载音频
+                bgm.load();
                 setTimeout(() => {
                     overlay.style.display = 'flex';
                 }, 300);
             }
 
-            // 绘制波形
-            // 匹配时变亮绿，未匹配时是经典复古金
             ctx.strokeStyle = matched ? '#00ff00' : '#d4af37';
             ctx.lineWidth = matched ? 4 : 2;
-            
-            // 匹配时增加发光效果
             ctx.shadowBlur = matched ? 15 : 0;
             ctx.shadowColor = ctx.strokeStyle;
 
             ctx.beginPath();
             for (let x = 0; x < width; x++) {
-                // 如果未解锁，波形会有随机噪点干扰
                 let noise = isUnlocked ? 0 : (Math.random() - 0.5) * (30 - a/4);
-                
-                // 波形公式
                 let y = height/2 + Math.sin(x * (f/150) + offset) * (a * height/300) + noise;
-                
                 if (x === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
 
-            // 动画速度
             offset += isUnlocked ? 0.15 : 0.08;
             requestAnimationFrame(draw);
         }
