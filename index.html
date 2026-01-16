@@ -21,22 +21,38 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* 1. 布局修复：不再垂直居中，而是从顶部开始，留出 10% 的距离 */
-            justify-content: flex-start;
-            padding-top: 10vh; 
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none;
+            
+            /* --- 布局核心修改开始 --- */
+            
+            /* 1. 改为顶部对齐，防止小屏居中导致内容被切 */
+            justify-content: flex-start; 
+            
+            /* 2. 顶部留出适量空间，不要太多 */
+            padding-top: 30px; 
+            
+            /* 3. 底部增加留白，确保最后的内容能滑上来 */
+            padding-bottom: 80px;
+            
+            /* 4. 最小高度为屏幕高度，内容多时自动延伸 */
+            min-height: 100vh;
+            
+            /* 5. 允许垂直滚动 (pan-y)，解除之前的锁定 */
+            touch-action: pan-y; 
+            overflow-y: auto; 
+            
+            /* --- 布局核心修改结束 --- */
+            
+            box-sizing: border-box;
         }
 
         /* Logo 区域 */
         .logo-container {
-            /* 减少底部间距，让屏幕更靠上 */
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             width: 50%;
-            max-width: 220px;
+            max-width: 200px;
             display: flex;
             justify-content: center;
+            flex-shrink: 0; /* 防止Logo被挤压 */
         }
 
         .logo-container img {
@@ -48,8 +64,9 @@
         /* 示波器屏幕 */
         #screen-frame {
             width: 85vw;
-            /* 稍微拉高屏幕高度，填充视觉 */
-            height: 35vh; 
+            /* 给定一个固定高度，避免太高占满屏幕 */
+            height: 300px; 
+            max-height: 35vh;
             border: 4px solid #333;
             border-radius: 12px;
             background: var(--screen-bg);
@@ -57,6 +74,7 @@
             box-shadow: inset 0 0 40px #000, 0 0 0 2px var(--gold);
             margin-bottom: 30px;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         canvas { width: 100%; height: 100%; }
@@ -67,6 +85,7 @@
             display: flex;
             flex-direction: column;
             gap: 25px;
+            flex-shrink: 0;
         }
 
         .slider-group { position: relative; }
@@ -143,13 +162,14 @@
             margin-bottom: 20px;
         }
 
-        /* 2. 音频调试信息显示区 */
+        /* 调试信息 */
         #debug-log {
-            font-size: 10px;
+            font-size: 12px;
             color: #ff4444;
             margin-top: 10px;
             max-width: 90%;
             word-wrap: break-word;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -206,9 +226,8 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // --- 音频播放核心修复 ---
         function playMusic() {
-            debugLog.innerText = "Trying to play...";
+            debugLog.innerText = "Attempting to play...";
             debugLog.style.color = "#ffff00";
 
             bgm.volume = 1.0;
@@ -216,28 +235,23 @@
 
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // 播放成功
                     playBtn.innerText = "HAPPY BIRTHDAY!";
                     playBtn.style.backgroundColor = "#fff"; 
                     playBtn.disabled = true;
-                    debugLog.innerText = "Playing... (Check volume)";
+                    debugLog.innerText = "Playing... Enjoy!";
                     debugLog.style.color = "#00ff00";
                 }).catch(error => {
-                    // 播放失败，打印错误原因到屏幕上
                     console.error(error);
-                    debugLog.innerText = "Error: " + error.message + " (Name: " + error.name + ")";
-                    
-                    // 针对常见错误的提示
+                    debugLog.innerText = "Error: " + error.message;
                     if (error.name === 'NotAllowedError') {
-                        debugLog.innerText += "\nTry clicking again!";
-                    } else if (error.name === 'NotSupportedError' || error.message.includes('404')) {
-                        debugLog.innerText += "\nFile missing or bad format. Check 'birthday.mp3' in repo.";
+                        debugLog.innerText += "\nTry tapping again!";
+                    } else if (error.message.includes('404')) {
+                        debugLog.innerText += "\nFile not found. Check filename case.";
                     }
                 });
             }
         }
 
-        // 同时监听 click 和 touchstart，增加 iOS 响应几率
         playBtn.addEventListener('click', playMusic);
         playBtn.addEventListener('touchstart', playMusic);
 
@@ -252,12 +266,11 @@
             const f = parseInt(freqInput.value);
             const a = parseInt(ampInput.value);
 
-            // 目标：11 和 80
-            const matched = (Math.abs(f - 11) <= 3 && Math.abs(a - 80) <= 3);
+            // 判定区域稍微宽松一点，防止太难调
+            const matched = (Math.abs(f - 11) <= 4 && Math.abs(a - 80) <= 4);
 
             if (matched && !isUnlocked) {
                 isUnlocked = true;
-                // 预加载音频
                 bgm.load();
                 setTimeout(() => {
                     overlay.style.display = 'flex';
