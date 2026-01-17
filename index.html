@@ -51,7 +51,7 @@
             display: block;
         }
 
-        /* 示波器屏幕 */
+        /* 示波器屏幕框架 */
         #screen-frame {
             width: 88vw;
             height: 280px;
@@ -67,6 +67,8 @@
             margin-bottom: 40px;
             overflow: hidden;
             flex-shrink: 0;
+            /* 保证屏幕在下层 */
+            z-index: 10; 
         }
 
         #screen-frame::after {
@@ -89,6 +91,7 @@
             flex-direction: column;
             gap: 35px;
             flex-shrink: 0;
+            z-index: 10;
         }
 
         .slider-group { position: relative; }
@@ -130,24 +133,24 @@
             z-index: 10;
         }
 
-        /* 弹窗层 */
-        #overlay {
+        /* --- 示波器内部的遮罩 (只显示 Title) --- */
+        #screen-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); /* 加深背景让文字更清晰 */
+            background: rgba(0,0,0,0.85);
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 20;
+            z-index: 5; /* 在 canvas 之上，但在信件层之下 */
             text-align: center;
             display: flex;
             opacity: 0;
             pointer-events: none;
             transition: opacity 1s ease-in-out;
-            cursor: pointer;
+            cursor: pointer; /* 兜底点击 */
         }
-
-        #overlay.visible {
+        
+        #screen-overlay.visible {
             opacity: 1;
             pointer-events: auto;
         }
@@ -160,38 +163,9 @@
             margin: 0;
             text-shadow: 0 0 20px var(--gold);
             padding: 0 10px;
-            margin-bottom: 20px; /* 给卡片留出空间 */
-        }
-        
-        /* === 新增：生日祝福卡片样式 === */
-        #message-card {
-            background: rgba(255, 255, 255, 0.05); /* 极淡的背景 */
-            border: 1px solid var(--gold);
-            border-radius: 8px;
-            padding: 20px;
-            width: 70%;
-            max-width: 260px;
-            opacity: 0; /* 默认隐藏 */
-            transform: translateY(20px); /* 稍微下沉 */
-            transition: all 0.8s ease 0.5s; /* 延迟0.5秒显示，错落有致 */
-        }
-        
-        /* 卡片显示状态 */
-        #message-card.show {
-            opacity: 1;
-            transform: translateY(0);
         }
 
-        .card-text {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 0.9rem;
-            color: #ddd;
-            line-height: 1.6;
-            margin: 0;
-            white-space: pre-line; /* 允许换行 */
-        }
-
-        /* 兜底点击提示 */
+        /* 兜底提示 */
         #tap-hint {
             font-family: 'Roboto Mono', monospace;
             font-size: 12px;
@@ -204,6 +178,64 @@
             padding: 8px 16px;
             border-radius: 4px;
         }
+
+        /* --- 全新的独立信件图层 (Letter Layer) --- */
+        #letter-layer {
+            position: fixed; /* 固定定位，覆盖全屏 */
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); /* 深色背景 */
+            backdrop-filter: blur(8px); /* 毛玻璃效果 */
+            z-index: 100; /* 最顶层 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none; /* 默认不可点击 */
+            transition: opacity 0.8s ease 0.5s; /* 稍微延迟一点显示 */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #letter-layer.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .letter-card {
+            border: 1px solid var(--gold);
+            padding: 30px 20px;
+            max-width: 320px;
+            width: 100%;
+            background: rgba(20, 20, 20, 0.8);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+            text-align: center;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.8s ease;
+        }
+
+        #letter-layer.show .letter-card {
+            transform: translateY(0);
+        }
+
+        .letter-text {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1rem;
+            color: #eee;
+            line-height: 1.8;
+            white-space: pre-line;
+            margin-bottom: 20px;
+        }
+
+        .close-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -214,22 +246,25 @@
 
     <div id="screen-frame">
         <canvas id="osc"></canvas>
-        <div id="overlay">
+        
+        <div id="screen-overlay">
             <h1 class="success-title">Happy Birthday</h1>
-            
-            <div id="message-card">
-                <p class="card-text">
-                    亲爱的可欣：
-                    
-                    愿你的每一天都像这
-                    完美的波形一样
-                    频率动人，充满能量。
-                    
-                    22岁生日快乐！
-                </p>
-            </div>
-
             <div id="tap-hint">CLICK TO START MUSIC</div>
+        </div>
+    </div>
+
+    <div id="letter-layer">
+        <div class="letter-card">
+            <p class="letter-text">
+                亲爱的可欣：
+
+                愿你的每一天
+                都像这完美的波形一样
+                频率动人，充满能量。
+
+                22岁生日快乐！
+            </p>
+            <div class="close-hint">Tap to close</div>
         </div>
     </div>
 
@@ -244,7 +279,7 @@
         </div>
     </div>
 
-    <audio id="bgm" preload="auto">
+    <audio id="bgm" preload="auto" loop>
         <source src="birthday.mp3" type="audio/mpeg">
     </audio>
 
@@ -253,10 +288,10 @@
         const ctx = canvas.getContext('2d');
         const freqInput = document.getElementById('freq');
         const ampInput = document.getElementById('amp');
-        const overlay = document.getElementById('overlay');
+        const screenOverlay = document.getElementById('screen-overlay');
         const bgm = document.getElementById('bgm');
         const tapHint = document.getElementById('tap-hint');
-        const messageCard = document.getElementById('message-card');
+        const letterLayer = document.getElementById('letter-layer');
 
         let width, height, offset = 0;
         let isUnlocked = false;
@@ -268,6 +303,7 @@
         window.addEventListener('resize', resize);
         resize();
 
+        // 核心检测逻辑
         function checkUnlock() {
             if (isUnlocked) return; 
             const f = parseInt(freqInput.value);
@@ -282,44 +318,45 @@
         function unlockAndPlay() {
             isUnlocked = true;
             
-            // 1. 尝试播放
+            // 尝试播放音乐 (已开启 loop 循环)
             const playPromise = bgm.play();
 
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // 自动播放成功
-                    showCard(); 
+                    // 播放成功，直接显示信件层
+                    showLetter();
                 }).catch(error => {
-                    // 自动播放失败（iOS拦截），显示点击提示
+                    // 自动播放失败，显示示波器内的点击提示
                     tapHint.style.opacity = 1;
                 });
             }
 
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
 
-            // 显示遮罩层
+            // 显示示波器上的 Happy Birthday 状态
             setTimeout(() => {
-                overlay.classList.add('visible');
+                screenOverlay.classList.add('visible');
             }, 300);
         }
 
-        // 显示祝福卡片的函数
-        function showCard() {
-            // 隐藏点击提示（如果存在）
-            tapHint.style.display = 'none';
-            // 显示卡片（带动画）
-            messageCard.classList.add('show');
+        function showLetter() {
+            tapHint.style.display = 'none'; // 隐藏提示
+            letterLayer.classList.add('show'); // 显示全屏信件
         }
 
-        // 兜底点击事件：点击后播放音乐并显示卡片
+        // 兜底点击：点击屏幕任意位置开始播放
         function manualPlay() {
             if (bgm.paused) {
                 bgm.play();
-                showCard();
+                showLetter();
             }
         }
-        overlay.addEventListener('click', manualPlay);
-        overlay.addEventListener('touchstart', manualPlay);
+        screenOverlay.addEventListener('click', manualPlay);
+
+        // 点击全屏信件层可以关闭它，回到主界面欣赏波形
+        letterLayer.addEventListener('click', () => {
+            letterLayer.classList.remove('show');
+        });
 
         function draw() {
             ctx.clearRect(0, 0, width, height);
