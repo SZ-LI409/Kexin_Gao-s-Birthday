@@ -7,11 +7,12 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@400;500&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@300;400;500&family=Roboto+Mono:wght@300;500&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --gold: #d4af37;
+            --bright-gold: #f9d77e;
             --dark-gold: #8a7020;
             --black: #080808;
             --screen-bg: #051005;
@@ -64,7 +65,6 @@
                 inset 0 0 60px rgba(0,0,0,0.9),
                 0 0 0 2px var(--dark-gold),
                 0 10px 20px rgba(0,0,0,0.5);
-            /* 减少底部边距，给按钮留空间 */
             margin-bottom: 20px; 
             overflow: hidden;
             flex-shrink: 0;
@@ -84,9 +84,9 @@
 
         canvas { width: 100%; height: 100%; }
 
-        /* --- 新增：重看祝福按钮 --- */
+        /* --- 重看祝福按钮 --- */
         .review-btn-container {
-            height: 40px; /* 占位高度，防止布局跳动 */
+            height: 40px; 
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -100,25 +100,25 @@
             font-family: 'Oswald', sans-serif;
             font-size: 0.9rem;
             letter-spacing: 2px;
-            padding: 8px 20px;
-            border-radius: 4px;
+            padding: 10px 24px;
+            border-radius: 2px;
             cursor: pointer;
             text-transform: uppercase;
             opacity: 0; /* 默认隐藏 */
             pointer-events: none;
-            transition: all 0.5s ease;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+            transition: all 0.6s ease;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+            transform: translateY(10px);
         }
         
-        /* 激活状态 */
         .review-btn.visible {
             opacity: 1;
             pointer-events: auto;
+            transform: translateY(0);
         }
 
         .review-btn:active {
             background: rgba(212, 175, 55, 0.2);
-            transform: scale(0.95);
         }
 
         /* 控件区域 */
@@ -202,25 +202,46 @@
             padding: 0 10px;
         }
 
+        /* 日期显示样式 */
+        .date-display {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--gold);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            letter-spacing: 1px;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            padding: 5px 10px;
+            opacity: 0.8;
+        }
+
         #tap-hint {
             font-family: 'Roboto Mono', monospace;
             font-size: 12px;
-            color: var(--gold);
+            color: var(--bright-gold);
             margin-top: 30px;
             opacity: 0; 
             transition: opacity 0.5s;
             letter-spacing: 1px;
             border: 1px solid var(--gold);
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 10px 20px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 2px;
+            animation: pulse 2s infinite;
         }
 
-        /* 全屏信件图层 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        /* === 全新的高级信件图层 === */
         #letter-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92);
-            backdrop-filter: blur(8px);
+            background: rgba(5, 5, 5, 0.95);
+            backdrop-filter: blur(10px);
             z-index: 100;
             display: flex;
             flex-direction: column;
@@ -228,7 +249,7 @@
             justify-content: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.8s ease;
             padding: 20px;
             box-sizing: border-box;
         }
@@ -238,49 +259,76 @@
             pointer-events: auto;
         }
 
+        /* 祝福卡片主体 */
         .letter-card {
-            border: 1px solid var(--gold);
-            padding: 30px 20px;
-            max-width: 320px;
+            border: 2px solid transparent;
+            /* 金色流光边框效果 */
+            border-image: linear-gradient(135deg, var(--dark-gold), var(--bright-gold), var(--dark-gold)) 1;
+            padding: 40px 30px;
+            max-width: 340px;
             width: 100%;
-            background: rgba(20, 20, 20, 0.8);
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+            background: linear-gradient(180deg, #111, #080808);
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.15);
             text-align: center;
             position: relative;
-            transform: translateY(20px);
-            transition: transform 0.5s ease;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         #letter-layer.show .letter-card {
-            transform: translateY(0);
+            transform: scale(1) translateY(0);
+        }
+
+        /* 卡片内饰元素 */
+        .card-header {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .card-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.5rem;
+            color: #fff;
+            margin: 0 0 20px 0;
+            line-height: 1.2;
+            background: linear-gradient(to right, #fff, var(--bright-gold), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .letter-text {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1rem;
-            color: #eee;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+            color: #ccc;
             line-height: 1.8;
             white-space: pre-line;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
         }
 
         .close-hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 11px;
+            color: #555;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             cursor: pointer;
-            border: 1px solid #444;
+            transition: color 0.3s;
+            margin-top: 10px;
             display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            transition: all 0.3s;
+            border-bottom: 1px solid transparent;
         }
         
-        .close-hint:active {
-            background: #333;
-            color: #fff;
+        .close-hint:hover {
+            color: var(--gold);
+            border-color: var(--gold);
         }
     </style>
 </head>
@@ -294,7 +342,9 @@
         <canvas id="osc"></canvas>
         <div id="screen-overlay">
             <h1 class="success-title">Happy Birthday</h1>
-            <div id="tap-hint">CLICK TO START MUSIC</div>
+            <div class="date-display">2004.01.29 - 2026.01.29</div>
+            
+            <div id="tap-hint">CLICK TO START</div>
         </div>
     </div>
 
@@ -304,16 +354,19 @@
 
     <div id="letter-layer">
         <div class="letter-card">
+            <div class="card-header">Invitation</div>
+            
+            <h2 class="card-title">My Dearest Friend</h2>
+            
             <p class="letter-text">
-                亲爱的可欣：
-
                 愿你的每一天
                 都像这完美的波形一样
                 频率动人，充满能量。
 
                 22岁生日快乐！
             </p>
-            <div class="close-hint" id="closeLetterBtn">Tap to close</div>
+            
+            <div class="close-hint" id="closeLetterBtn">Tap anywhere to close</div>
         </div>
     </div>
 
@@ -369,22 +422,25 @@
         function unlockAndPlay() {
             isUnlocked = true;
             
+            // 尝试播放音乐
             const playPromise = bgm.play();
 
             if (playPromise !== undefined) {
                 playPromise.then(() => {
+                    // 自动播放成功 -> 显示信件
                     showLetter();
                 }).catch(error => {
+                    // 自动播放失败 -> 显示“点击开始”提示
+                    // 注意：此时不显示信件，也不显示 Read Again 按钮，等待用户手动点击
                     tapHint.style.opacity = 1;
                 });
             }
 
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
 
+            // 显示屏幕上的 Happy Birthday 和 日期
             setTimeout(() => {
                 screenOverlay.classList.add('visible');
-                // 解锁成功后，让重看按钮也显示出来（虽然此时弹窗挡住了，但关掉弹窗就能看到）
-                reviewBtn.classList.add('visible');
             }, 300);
         }
 
@@ -393,29 +449,35 @@
             letterLayer.classList.add('show');
         }
 
-        // 兜底播放
+        // 隐藏信件
+        function hideLetter() {
+            letterLayer.classList.remove('show');
+            // 关键点：只有在第一次关闭信件后，或者信件展示过之后，才显示下方按钮
+            // 这样保证了一开始界面干净
+            if (!reviewBtn.classList.contains('visible')) {
+                setTimeout(() => {
+                    reviewBtn.classList.add('visible');
+                }, 500); // 稍微延迟一点，等信件消失动画做完
+            }
+        }
+
+        // 兜底点击：点击屏幕任意位置开始播放
         function manualPlay() {
             if (bgm.paused) {
                 bgm.play();
                 showLetter();
             }
         }
-        screenOverlay.addEventListener('click', manualPlay);
+        // 只有在没解锁或者音乐没放的时候，点击屏幕才触发播放逻辑
+        tapHint.addEventListener('click', manualPlay);
+        screenOverlay.addEventListener('click', () => {
+            if(bgm.paused) manualPlay();
+        });
 
         // --- 按钮逻辑 ---
         
-        // 点击“Tap to close”关闭信件层
-        closeLetterBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // 防止冒泡
-            letterLayer.classList.remove('show');
-        });
-        
-        // 点击整个半透明背景也可以关闭
-        letterLayer.addEventListener('click', (e) => {
-            if (e.target === letterLayer) {
-                letterLayer.classList.remove('show');
-            }
-        });
+        // 点击“Tap to close”或背景关闭信件层
+        letterLayer.addEventListener('click', hideLetter);
 
         // 点击下方按钮重新打开信件
         reviewBtn.addEventListener('click', () => {
