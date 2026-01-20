@@ -33,7 +33,7 @@
             touch-action: pan-y;
             overflow-y: auto;
             box-sizing: border-box;
-            overflow-x: hidden; /* 防止照片掉落时出现横向滚动条 */
+            overflow-x: hidden;
         }
 
         /* Logo 区域 */
@@ -105,7 +105,7 @@
             border-radius: 2px;
             cursor: pointer;
             text-transform: uppercase;
-            opacity: 0; /* 默认隐藏 */
+            opacity: 0; 
             pointer-events: none;
             transition: all 0.6s ease;
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
@@ -171,7 +171,6 @@
             z-index: 10;
         }
 
-        /* 示波器内部遮罩 */
         #screen-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -203,7 +202,6 @@
             padding: 0 10px;
         }
 
-        /* 日期显示样式 */
         .date-display {
             font-family: 'Roboto Mono', monospace;
             color: var(--gold);
@@ -237,7 +235,7 @@
             100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
         }
 
-        /* === 全新的高级信件图层 === */
+        /* === 信件图层 === */
         #letter-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -260,10 +258,8 @@
             pointer-events: auto;
         }
 
-        /* 祝福卡片主体 */
         .letter-card {
             border: 2px solid transparent;
-            /* 金色流光边框效果 */
             border-image: linear-gradient(135deg, var(--dark-gold), var(--bright-gold), var(--dark-gold)) 1;
             padding: 40px 30px;
             max-width: 340px;
@@ -274,15 +270,13 @@
             position: relative;
             transform: scale(0.95) translateY(20px);
             transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            /* 确保图片能超出卡片显示 */
-            overflow: visible; 
+            overflow: visible; /* 允许图片溢出 */
         }
 
         #letter-layer.show .letter-card {
             transform: scale(1) translateY(0);
         }
 
-        /* 卡片内饰元素 */
         .card-header {
             font-family: 'Cinzel', serif;
             color: var(--gold);
@@ -317,7 +311,7 @@
             letter-spacing: 1px;
             min-height: 120px;
             position: relative;
-            z-index: 2; /* 文字在照片下层还是上层？通常照片会遮挡一点文字才真实，或者照片在旁边。这里设为2，照片设为50，照片盖住文字 */
+            z-index: 2; /* 文字在最下层，被图片稍微遮挡一点点更真实 */
         }
 
         .close-hint {
@@ -332,7 +326,7 @@
             display: inline-block;
             border-bottom: 1px solid transparent;
             position: relative;
-            z-index: 100; /* 确保关闭按钮永远可以点击 */
+            z-index: 100;
         }
         
         .close-hint:hover {
@@ -344,30 +338,61 @@
         .polaroid {
             position: absolute;
             background: #fff;
-            padding: 6px 6px 20px 6px; /* 底部留白多一点，像拍立得 */
+            padding: 6px 6px 20px 6px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            z-index: 50; /* 盖在文字上面 */
-            opacity: 0; /* 初始不可见 */
-            width: 100px; /* 照片大小 */
-            /* 初始位置在屏幕上方很远的地方 */
-            top: -500px; 
+            z-index: 50; 
+            opacity: 0; 
+            width: 90px;
+            top: -60vh; /* 初始位置在屏幕外 */
             left: 50%;
-            pointer-events: none; /* 让照片不可点击，防止挡住关闭按钮 */
+            cursor: zoom-in; /* 允许点击放大 */
+            pointer-events: auto; /* 关键：允许点击 */
+            transition: transform 0.3s ease; /* 放大动画 */
         }
 
         .polaroid img {
             width: 100%;
             display: block;
-            filter: sepia(20%); /* 复古滤镜 */
+            filter: sepia(20%);
         }
 
-        /* 掉落动画 Keyframes */
+        /* 放大查看样式 */
+        .polaroid.expanded {
+            position: fixed;
+            top: 50% !important; /* 强制居中 */
+            left: 50% !important;
+            width: 85vw; /* 放大后的宽度 */
+            max-width: 500px;
+            height: auto;
+            transform: translate(-50%, -50%) rotate(0deg) scale(1) !important;
+            z-index: 2000; /* 最最顶层 */
+            cursor: zoom-out;
+            padding: 10px 10px 40px 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 查看大图时的黑色背景 */
+        #photo-backdrop {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #photo-backdrop.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 掉落动画 */
         @keyframes dropIn {
             0% { top: -60vh; opacity: 0; transform: rotate(0deg); }
             100% { top: var(--target-top); opacity: 1; transform: rotate(var(--target-rot)); }
         }
 
-        /* 应用动画的类 */
         .polaroid.drop {
             animation: dropIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
@@ -394,9 +419,11 @@
         <button id="reviewBtn" class="review-btn">Read Wish Again</button>
     </div>
 
+    <div id="photo-backdrop"></div>
+
     <div id="letter-layer">
         <div class="letter-card" id="letterCard">
-            <div class="card-header">Invitation</div>
+            <div class="card-header">BUZHIDAOXIESHENME</div>
             
             <h2 class="card-title" id="cardTitle">Happy Birthday</h2>
             
@@ -404,13 +431,13 @@
                 </p>
             
             <div id="polaroid-container">
-                <div class="polaroid" id="p1" style="--target-top: -20px; --target-rot: -15deg; left: -10px;">
+                <div class="polaroid" id="p1" style="--target-top: -50px; --target-rot: -12deg; left: -45px;">
                     <img src="sea.png" alt="Sea">
                 </div>
-                <div class="polaroid" id="p2" style="--target-top: 40px; --target-rot: 8deg; left: 220px;">
+                <div class="polaroid" id="p2" style="--target-top: -50px; --target-rot: 10deg; left: auto; right: -45px;">
                     <img src="japan.png" alt="Japan">
                 </div>
-                <div class="polaroid" id="p3" style="--target-top: 150px; --target-rot: -5deg; left: 10px;">
+                <div class="polaroid" id="p3" style="--target-top: 85%; --target-rot: -5deg; left: auto; right: -20px;">
                     <img src="snow.png" alt="Snow">
                 </div>
             </div>
@@ -448,14 +475,14 @@
         const cardText = document.getElementById('cardText');
         const closeLetterBtn = document.getElementById('closeLetterBtn');
         const polaroids = document.querySelectorAll('.polaroid');
+        const photoBackdrop = document.getElementById('photo-backdrop');
 
         let width, height, offset = 0;
         let isUnlocked = false;
         
-        // --- 内容配置 ---
         const contentNormal = {
             title: "Happy Birthday",
-            text: "没有官方的祝福\n只希望可欣天天开心、身体好好的\n22岁生日快乐\n\n——真心盼你好的Lily"
+            text: "没有官方的祝福\n真的真的希望可欣天天开心、身体好好的\n22岁生日快乐\n\n——Lily"
         };
         
         const contentTease = {
@@ -463,7 +490,6 @@
             text: "还想要惊喜？\n你也太贪得无厌了。\n\n真没有了\n( ˘•ω•˘ )"
         };
 
-        // 点击计数器：0=第一次, 1=第一次重看(调皮), 2=第二次重看(正常), ...
         let clickCount = 0;
 
         function resize() {
@@ -473,7 +499,6 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 核心检测
         function checkUnlock() {
             if (isUnlocked) return; 
             const f = parseInt(freqInput.value);
@@ -487,78 +512,52 @@
 
         function unlockAndPlay() {
             isUnlocked = true;
-            
             const playPromise = bgm.play();
-
             if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    // 自动播放成功 -> 显示初始信件
-                    showLetter(false); // false 表示不是调皮模式
-                }).catch(error => {
-                    tapHint.style.opacity = 1;
-                });
+                playPromise.then(() => { showLetter(false); }).catch(error => { tapHint.style.opacity = 1; });
             }
-
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-
-            setTimeout(() => {
-                screenOverlay.classList.add('visible');
-            }, 300);
+            setTimeout(() => { screenOverlay.classList.add('visible'); }, 300);
         }
 
-        // 显示信件逻辑
-        // isTeaseMode: true 显示调皮文字且无图; false 显示正常文字且掉落图片
         function showLetter(isTeaseMode) {
             tapHint.style.display = 'none'; 
-            
-            // 1. 设置文字
             if (isTeaseMode) {
                 cardTitle.innerText = contentTease.title;
                 cardText.innerText = contentTease.text;
-                // 确保照片隐藏
                 resetPhotos();
             } else {
                 cardTitle.innerText = contentNormal.title;
                 cardText.innerText = contentNormal.text;
-                // 触发照片掉落
                 dropPhotos();
             }
-            
-            // 2. 显示图层
             letterLayer.classList.add('show');
         }
 
-        // 掉落照片动画
         function dropPhotos() {
-            // 先重置一下，防止动画没复位
             resetPhotos();
-            
-            // 依次掉落，增加一点延迟感
-            setTimeout(() => { document.getElementById('p1').classList.add('drop'); }, 400); // 第一张
-            setTimeout(() => { document.getElementById('p2').classList.add('drop'); }, 800); // 第二张
-            setTimeout(() => { document.getElementById('p3').classList.add('drop'); }, 1200); // 第三张
+            setTimeout(() => { document.getElementById('p1').classList.add('drop'); }, 400); 
+            setTimeout(() => { document.getElementById('p2').classList.add('drop'); }, 800); 
+            setTimeout(() => { document.getElementById('p3').classList.add('drop'); }, 1200); 
         }
 
-        // 重置照片位置（收回去）
         function resetPhotos() {
             polaroids.forEach(p => {
                 p.classList.remove('drop');
+                // 确保重置时关闭放大状态
+                p.classList.remove('expanded'); 
             });
+            photoBackdrop.classList.remove('visible');
         }
 
-        // 隐藏信件
         function hideLetter() {
             letterLayer.classList.remove('show');
-            
-            // 显示重看按钮
+            resetPhotos(); // 关闭信件时也重置照片位置
             if (!reviewBtn.classList.contains('visible')) {
-                setTimeout(() => {
-                    reviewBtn.classList.add('visible');
-                }, 500); 
+                setTimeout(() => { reviewBtn.classList.add('visible'); }, 500); 
             }
         }
 
-        // 兜底点击
         function manualPlay() {
             if (bgm.paused) {
                 bgm.play();
@@ -566,28 +565,49 @@
             }
         }
         tapHint.addEventListener('click', manualPlay);
-        screenOverlay.addEventListener('click', () => {
-            if(bgm.paused) manualPlay();
+        screenOverlay.addEventListener('click', () => { if(bgm.paused) manualPlay(); });
+
+        // --- 照片放大逻辑 ---
+        polaroids.forEach(p => {
+            p.addEventListener('click', (e) => {
+                e.stopPropagation(); // 防止触发 letterLayer 的关闭事件
+                
+                // 如果当前已经是放大状态，就缩小
+                if (p.classList.contains('expanded')) {
+                    p.classList.remove('expanded');
+                    photoBackdrop.classList.remove('visible');
+                } else {
+                    // 先把其他已放大的缩小（互斥）
+                    polaroids.forEach(other => other.classList.remove('expanded'));
+                    
+                    p.classList.add('expanded');
+                    photoBackdrop.classList.add('visible');
+                }
+            });
+        });
+
+        // 点击背景遮罩关闭放大图片
+        photoBackdrop.addEventListener('click', () => {
+            polaroids.forEach(p => p.classList.remove('expanded'));
+            photoBackdrop.classList.remove('visible');
         });
 
         // --- 按钮逻辑 ---
-        letterLayer.addEventListener('click', hideLetter);
+        letterLayer.addEventListener('click', (e) => {
+            // 只有点击空白处才关闭信件，点击照片时不关闭
+            if (!e.target.closest('.polaroid')) {
+                hideLetter();
+            }
+        });
 
-        // 重看按钮逻辑：交替显示
         reviewBtn.addEventListener('click', () => {
             clickCount++; 
-            
-            // 逻辑：奇数次点击（1,3,5...）显示调皮话；偶数次（2,4,6...）显示原话
             const isTease = (clickCount % 2 !== 0);
-            
             showLetter(isTease);
         });
 
-
-        // 绘图循环
         function draw() {
             ctx.clearRect(0, 0, width, height);
-
             ctx.strokeStyle = 'rgba(212, 175, 55, 0.1)';
             ctx.lineWidth = 1;
             for(let i=0; i<width; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke(); }
@@ -610,11 +630,9 @@
                 else ctx.lineTo(x, y);
             }
             ctx.stroke();
-
             offset += isUnlocked ? 0.15 : 0.08;
             requestAnimationFrame(draw);
         }
-
         draw();
     </script>
 </body>
