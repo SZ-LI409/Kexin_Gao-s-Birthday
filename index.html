@@ -105,7 +105,7 @@
             border-radius: 2px;
             cursor: pointer;
             text-transform: uppercase;
-            opacity: 0; 
+            opacity: 0; /* 默认隐藏 */
             pointer-events: none;
             transition: all 0.6s ease;
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
@@ -171,6 +171,7 @@
             z-index: 10;
         }
 
+        /* 示波器内部遮罩 */
         #screen-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -311,7 +312,7 @@
             letter-spacing: 1px;
             min-height: 120px;
             position: relative;
-            z-index: 2; /* 文字在最下层，被图片稍微遮挡一点点更真实 */
+            z-index: 2; 
         }
 
         .close-hint {
@@ -343,48 +344,17 @@
             z-index: 50; 
             opacity: 0; 
             width: 90px;
-            top: -60vh; /* 初始位置在屏幕外 */
+            top: -60vh; 
             left: 50%;
-            cursor: zoom-in; /* 允许点击放大 */
-            pointer-events: auto; /* 关键：允许点击 */
-            transition: transform 0.3s ease; /* 放大动画 */
+            cursor: zoom-in; 
+            pointer-events: auto; 
+            transition: transform 0.3s ease;
         }
 
         .polaroid img {
             width: 100%;
             display: block;
             filter: sepia(20%);
-        }
-
-        /* 放大查看样式 */
-        .polaroid.expanded {
-            position: fixed;
-            top: 50% !important; /* 强制居中 */
-            left: 50% !important;
-            width: 85vw; /* 放大后的宽度 */
-            max-width: 500px;
-            height: auto;
-            transform: translate(-50%, -50%) rotate(0deg) scale(1) !important;
-            z-index: 2000; /* 最最顶层 */
-            cursor: zoom-out;
-            padding: 10px 10px 40px 10px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* 查看大图时的黑色背景 */
-        #photo-backdrop {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1500;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        #photo-backdrop.visible {
-            opacity: 1;
-            pointer-events: auto;
         }
 
         /* 掉落动画 */
@@ -395,6 +365,50 @@
 
         .polaroid.drop {
             animation: dropIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* === 独立 Lightbox (放大查看层) === */
+        #lightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000; /* 最高层级 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        #lightbox.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #lightbox-img {
+            max-width: 90vw;
+            max-height: 80vh;
+            border: 12px solid #fff;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border-bottom-width: 40px; /* 拍立得效果 */
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        #lightbox.visible #lightbox-img {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            bottom: 30px;
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            opacity: 0.7;
+            letter-spacing: 2px;
         }
 
     </style>
@@ -419,7 +433,10 @@
         <button id="reviewBtn" class="review-btn">Read Wish Again</button>
     </div>
 
-    <div id="photo-backdrop"></div>
+    <div id="lightbox">
+        <img id="lightbox-img" src="" alt="Zoomed Photo">
+        <div class="lightbox-close">Tap anywhere to close</div>
+    </div>
 
     <div id="letter-layer">
         <div class="letter-card" id="letterCard">
@@ -431,13 +448,13 @@
                 </p>
             
             <div id="polaroid-container">
-                <div class="polaroid" id="p1" style="--target-top: -50px; --target-rot: -12deg; left: -45px;">
+                <div class="polaroid" id="p1" style="--target-top: -50px; --target-rot: -12deg; left: -20px;">
                     <img src="sea.png" alt="Sea">
                 </div>
-                <div class="polaroid" id="p2" style="--target-top: -50px; --target-rot: 10deg; left: auto; right: -45px;">
+                <div class="polaroid" id="p2" style="--target-top: -50px; --target-rot: 10deg; left: auto; right: -20px;">
                     <img src="japan.png" alt="Japan">
                 </div>
-                <div class="polaroid" id="p3" style="--target-top: 85%; --target-rot: -5deg; left: auto; right: -20px;">
+                <div class="polaroid" id="p3" style="--target-top: 75%; --target-rot: -5deg; left: auto; right: 10px;">
                     <img src="snow.png" alt="Snow">
                 </div>
             </div>
@@ -475,14 +492,17 @@
         const cardText = document.getElementById('cardText');
         const closeLetterBtn = document.getElementById('closeLetterBtn');
         const polaroids = document.querySelectorAll('.polaroid');
-        const photoBackdrop = document.getElementById('photo-backdrop');
+        
+        // Lightbox 元素
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
 
         let width, height, offset = 0;
         let isUnlocked = false;
         
         const contentNormal = {
             title: "Happy Birthday",
-            text: "没有官方的祝福\n真的真的希望可欣天天开心、身体好好的\n22岁生日快乐\n\n——Lily"
+            text: "俺不会说漂亮话\n真的真的希望可欣天天开心、身体好好的\n22岁生日快乐\n\n——Lily"
         };
         
         const contentTease = {
@@ -544,15 +564,12 @@
         function resetPhotos() {
             polaroids.forEach(p => {
                 p.classList.remove('drop');
-                // 确保重置时关闭放大状态
-                p.classList.remove('expanded'); 
             });
-            photoBackdrop.classList.remove('visible');
         }
 
         function hideLetter() {
             letterLayer.classList.remove('show');
-            resetPhotos(); // 关闭信件时也重置照片位置
+            resetPhotos(); 
             if (!reviewBtn.classList.contains('visible')) {
                 setTimeout(() => { reviewBtn.classList.add('visible'); }, 500); 
             }
@@ -567,34 +584,28 @@
         tapHint.addEventListener('click', manualPlay);
         screenOverlay.addEventListener('click', () => { if(bgm.paused) manualPlay(); });
 
-        // --- 照片放大逻辑 ---
+        // --- 全新 Lightbox 逻辑 ---
         polaroids.forEach(p => {
             p.addEventListener('click', (e) => {
-                e.stopPropagation(); // 防止触发 letterLayer 的关闭事件
+                e.stopPropagation(); // 防止点击穿透到 letterLayer 导致关闭
                 
-                // 如果当前已经是放大状态，就缩小
-                if (p.classList.contains('expanded')) {
-                    p.classList.remove('expanded');
-                    photoBackdrop.classList.remove('visible');
-                } else {
-                    // 先把其他已放大的缩小（互斥）
-                    polaroids.forEach(other => other.classList.remove('expanded'));
-                    
-                    p.classList.add('expanded');
-                    photoBackdrop.classList.add('visible');
-                }
+                // 获取当前点击照片的 img src
+                const src = p.querySelector('img').src;
+                lightboxImg.src = src;
+                
+                // 显示 lightbox
+                lightbox.classList.add('visible');
             });
         });
 
-        // 点击背景遮罩关闭放大图片
-        photoBackdrop.addEventListener('click', () => {
-            polaroids.forEach(p => p.classList.remove('expanded'));
-            photoBackdrop.classList.remove('visible');
+        // 点击 lightbox 关闭放大查看
+        lightbox.addEventListener('click', () => {
+            lightbox.classList.remove('visible');
         });
 
         // --- 按钮逻辑 ---
         letterLayer.addEventListener('click', (e) => {
-            // 只有点击空白处才关闭信件，点击照片时不关闭
+            // 只有点击空白处才关闭信件，点击照片时不关闭（虽然照片点击已被 stopPropagation 拦截，加个双保险）
             if (!e.target.closest('.polaroid')) {
                 hideLetter();
             }
