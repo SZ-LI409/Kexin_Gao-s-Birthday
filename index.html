@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kexin Gao's 22nd Birthday</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@300;400;500&family=Roboto+Mono:wght@300;500&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Oswald:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto+Mono:wght@300;500&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -168,19 +168,43 @@
             position: relative;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             overflow: hidden;
+            /* 增加一点上下遮罩，让歌词滚动更柔和 */
+            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
         }
-
+        
         .lyric-line {
-            color: #555; text-align: center; padding: 8px 0; 
-            font-family: 'Roboto Mono', sans-serif; font-size: 0.95rem; 
-            transition: all 0.5s ease-out;
-            opacity: 0.4; line-height: 1.4;
-            width: 90%; white-space: normal; min-height: 1.4em;
+            /* 默认非高亮歌词颜色 */
+            color: #666; 
+            text-align: center; 
+            padding: 10px 0; 
+            
+            /* === 核心修改：使用新字体 Playfair Display === */
+            font-family: 'Playfair Display', serif; 
+            font-style: italic; /* 使用斜体更具诗意 */
+            font-size: 1.1rem;  /* 字体稍微调大一点 */
+            letter-spacing: 0.5px;
+            
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 更平滑的过渡动画 */
+            opacity: 0.4; 
+            line-height: 1.6;
+            width: 90%; 
+            white-space: normal; 
+            min-height: 1.6em;
         }
+        
         .lyric-line.active { 
-            color: #fff; font-size: 1.2rem; font-weight: 500;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); 
-            opacity: 1; transform: scale(1.05);
+            /* 高亮行颜色：使用定义的金色变量 */
+            color: var(--gold); 
+            font-size: 1.5rem; /* 高亮时放大 */
+            font-weight: 700;  /* 加粗 */
+            font-style: normal; /* 高亮行可以变回正体，或者保持 italic 也可以 */
+            
+            /* 增加金色发光效果 */
+            text-shadow: 0 0 25px rgba(212, 175, 55, 0.6); 
+            
+            opacity: 1; 
+            transform: scale(1.05);
         }
 
         /* --- 迷你悬浮窗 (Mini Player) --- */
@@ -261,7 +285,7 @@
 
     <div id="letter-layer">
         <div class="letter-card" id="letterCard">
-            <div class="card-header">Invitation</div>
+            <div class="card-header">BUZHIDAOXIESHENME</div>
             <h2 class="card-title" id="cardTitle">Happy Birthday</h2>
             <p class="letter-text" id="cardText"></p>
             <button id="musicStartBtn" class="special-btn">Listen Now</button>
