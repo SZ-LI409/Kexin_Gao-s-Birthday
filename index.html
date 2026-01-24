@@ -261,7 +261,7 @@
 
     <div id="letter-layer">
         <div class="letter-card" id="letterCard">
-            <div class="card-header">BUZHIDAOXIESHENME</div>
+            <div class="card-header">Invitation</div>
             <h2 class="card-title" id="cardTitle">Happy Birthday</h2>
             <p class="letter-text" id="cardText"></p>
             <button id="musicStartBtn" class="special-btn">Listen Now</button>
@@ -440,12 +440,10 @@
                 else break;
             }
 
-            // 获取现有DOM元素，而不是每次清空
             const prevP = document.getElementById('lyric-prev');
             const currP = document.getElementById('lyric-curr');
             const nextP = document.getElementById('lyric-next');
 
-            // 如果DOM不存在，先创建结构
             if (!prevP) {
                 lyricsContainer.innerHTML = '';
                 const p1 = document.createElement('div'); p1.id = 'lyric-prev'; p1.className = 'lyric-line';
@@ -455,7 +453,6 @@
                 return;
             }
 
-            // 更新文本内容
             if (activeIndex !== -1) {
                 prevP.innerText = (activeIndex > 0) ? lyricsData[activeIndex - 1].text : "";
                 currP.innerText = lyricsData[activeIndex].text;
@@ -467,9 +464,9 @@
             }
         }
 
-        const contentNormal = { title: "Happy Birthday", text: "想说的话好多好多好多\n但是嘴太笨了\n不如用这种方式\n有点老土\n希望你喜欢\n生日快乐\n\n——Lily" };
-        const contentTease = { title: "Oh?", text: "还想要？\n你也太贪得无厌了\n\n这回真没有了\n( ˘•ω•˘ )" };
-        const contentMusicOffer = { title: "One More Thing", text: "还想要惊喜？\n好吧，那满足你\n请聆听我精心挑选的音乐\n配合Marshall音箱（很重要）" };
+        const contentNormal = { title: "Happy Birthday", text: "没有官方的祝福\n只希望可欣天天开心、身体好好的\n22岁生日快乐\n\n——真心盼你好的Lily" };
+        const contentTease = { title: "Surprise?", text: "还想要惊喜？\n你也太贪得无厌了。\n\n真没有了\n( ˘•ω•˘ )" };
+        const contentMusicOffer = { title: "One More Thing", text: "还想要惊喜？\n好吧，那满足你。\n请聆听我给你精心挑选的音乐\n配合Marshall音箱。" };
 
         function resize() { width = canvas.width = canvas.offsetWidth; height = canvas.height = canvas.offsetHeight; }
         window.addEventListener('resize', resize); resize();
@@ -478,7 +475,6 @@
             if (isUnlocked) return;
             if (!sfx.isPlaying) sfx.start();
             
-            // 修复：强制唤醒 AudioContext，确保噪声能听到
             if (sfx.ctx && sfx.ctx.state === 'suspended') {
                 sfx.ctx.resume();
             }
@@ -497,18 +493,11 @@
             if (matched) unlockAndPlay();
         }
 
-        // --- 核心修改区 ---
         function unlockAndPlay() {
             isUnlocked = true; 
-            sfx.stop(); // 停止噪声
-            
-            // 1. 视觉反馈：显示点击提示 (但不播放音乐)
+            sfx.stop(); 
             tapHint.style.opacity = 1; 
-            
-            // 2. 震动反馈
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-            
-            // 3. 显示遮罩
             setTimeout(() => screenOverlay.classList.add('visible'), 300);
         }
 
@@ -566,28 +555,51 @@
             miniPlayer.classList.add('visible');
         });
 
+        // 【修改点 1】：miniPlayer 点击逻辑增强
+        // 如果用户是第一次通过 miniPlayer 打开（之前没点 Listen Now），需要执行初始化
         miniPlayer.addEventListener('click', () => {
+            // 如果从未打开过播放器，说明用户之前关掉了 Music Offer，现在通过悬浮窗进来
+            if (!hasOpenedPlayer) {
+                hasOpenedPlayer = true;
+                bgm.src = "Cody Fry&Abby Cates - Things You Said.mp3"; 
+                initLyricsData(); 
+                bgm.load();
+                bgm.play().then(() => {
+                    playerCover.classList.remove('paused');
+                    miniDisc.classList.remove('paused');
+                }).catch(e => console.log(e));
+                syncLyrics();
+            }
+
             musicPlayerLayer.classList.add('active');
             miniPlayer.classList.remove('visible');
         });
 
         function dropPhotos() { resetPhotos(); setTimeout(() => document.getElementById('p1').classList.add('drop'), 400); setTimeout(() => document.getElementById('p2').classList.add('drop'), 800); setTimeout(() => document.getElementById('p3').classList.add('drop'), 1200); }
         function resetPhotos() { polaroids.forEach(p => { p.classList.remove('drop'); p.classList.remove('expanded'); }); document.getElementById('lightbox').classList.remove('visible'); }
-        function hideLetter() { letterLayer.classList.remove('show'); resetPhotos(); if (!reviewBtn.classList.contains('visible')) setTimeout(() => reviewBtn.classList.add('visible'), 500); }
+        
+        // 【修改点 2】：hideLetter 逻辑增强
+        // 当关闭信件时，如果发现刚才显示的是“Music Offer”（即带有 musicStartBtn 的信），强制显示 miniPlayer
+        function hideLetter() { 
+            // 检查：如果当前信件里有“Listen Now”按钮（说明是第三封信），且用户点击了关闭
+            if (musicStartBtn.classList.contains('show')) {
+                miniPlayer.classList.add('visible');
+            }
+
+            letterLayer.classList.remove('show'); 
+            resetPhotos(); 
+            if (!reviewBtn.classList.contains('visible')) setTimeout(() => reviewBtn.classList.add('visible'), 500); 
+        }
         
         polaroids.forEach(p => p.addEventListener('click', (e) => { e.stopPropagation(); lightboxImg.src = p.querySelector('img').src; lightbox.classList.add('visible'); }));
         lightbox.addEventListener('click', () => lightbox.classList.remove('visible'));
         letterLayer.addEventListener('click', (e) => { if (!e.target.closest('.polaroid') && !e.target.closest('.special-btn')) hideLetter(); });
         
-        // --- 核心修改区 ---
         function manualPlay() { 
-            // 用户点击时，强制尝试播放音乐
             bgm.play().catch(e => console.log("Audio play error:", e));
-            // 无论音乐是否成功，都显示信件
             showLetter('normal'); 
         }
 
-        // 将 manualPlay 绑定到点击事件
         tapHint.addEventListener('click', manualPlay);
         screenOverlay.addEventListener('click', manualPlay);
 
