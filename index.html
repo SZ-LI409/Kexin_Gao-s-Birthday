@@ -168,43 +168,19 @@
             position: relative;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             overflow: hidden;
-            /* 增加一点上下遮罩，让歌词滚动更柔和 */
-            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
         }
-        
+
         .lyric-line {
-            /* 默认非高亮歌词颜色 */
-            color: #666; 
-            text-align: center; 
-            padding: 10px 0; 
-            
-            /* === 核心修改：使用新字体 Playfair Display === */
-            font-family: 'Playfair Display', serif; 
-            font-style: italic; /* 使用斜体更具诗意 */
-            font-size: 1.1rem;  /* 字体稍微调大一点 */
-            letter-spacing: 0.5px;
-            
-            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 更平滑的过渡动画 */
-            opacity: 0.4; 
-            line-height: 1.6;
-            width: 90%; 
-            white-space: normal; 
-            min-height: 1.6em;
+            color: #555; text-align: center; padding: 8px 0; 
+            font-family: 'Roboto Mono', sans-serif; font-size: 0.95rem; 
+            transition: all 0.5s ease-out;
+            opacity: 0.4; line-height: 1.4;
+            width: 90%; white-space: normal; min-height: 1.4em;
         }
-        
         .lyric-line.active { 
-            /* 高亮行颜色：使用定义的金色变量 */
-            color: var(--gold); 
-            font-size: 1.5rem; /* 高亮时放大 */
-            font-weight: 700;  /* 加粗 */
-            font-style: normal; /* 高亮行可以变回正体，或者保持 italic 也可以 */
-            
-            /* 增加金色发光效果 */
-            text-shadow: 0 0 25px rgba(212, 175, 55, 0.6); 
-            
-            opacity: 1; 
-            transform: scale(1.05);
+            color: #fff; font-size: 1.2rem; font-weight: 500;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3); 
+            opacity: 1; transform: scale(1.05);
         }
 
         /* --- 迷你悬浮窗 (Mini Player) --- */
@@ -489,7 +465,7 @@
         }
 
         const contentNormal = { title: "Happy Birthday", text: "想说的话好多好多好多\n但是嘴太笨了，不如用这种方式\n\有点老土，希望你喜欢\n可欣，22岁生日快乐\n\n——Lily" };
-        const contentTease = { title: "Surprise?", text: "还要？\n你也太贪得无厌了。\n\n这回真没有了\n( ˘•ω•˘ )" };
+        const contentTease = { title: "Surprise?", text: "还要？\n你也太贪了\n\n这回真没有了\n( ˘•ω•˘ )" };
         const contentMusicOffer = { title: "One More Thing", text: "还想要惊喜？\n好吧，满足你\n请聆听我精心挑选的音乐\n配合Marshall音箱（很重要）" };
 
         function resize() { width = canvas.width = canvas.offsetWidth; height = canvas.height = canvas.offsetHeight; }
